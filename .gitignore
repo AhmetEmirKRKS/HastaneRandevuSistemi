@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# SQLite veritabani (her bilgisayarda otomatik olusur)
+hastane.db*

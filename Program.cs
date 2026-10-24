@@ -1,9 +1,22 @@
+using HastaneRandevuSistemi.Data;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<HastaneContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("Hastane")));
 
 var app = builder.Build();
+
+// Veritabanı yoksa oluştur ve örnek verileri ekle
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<HastaneContext>();
+    db.Database.EnsureCreated();
+    OrnekVeriler.Ekle(db);
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
