@@ -1,8 +1,19 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Ana Sayfa";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center mt-5">
+    <h1 class="display-5">Hastane Randevu Sistemi</h1>
+
+    @if (User.Identity!.IsAuthenticated)
+    {
+        <p class="lead mt-3">Hoş geldiniz, <strong>@User.Identity.Name</strong></p>
+        <p class="text-muted">Rolünüz: @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</p>
+    }
+    else
+    {
+        <p class="lead mt-3">Randevu almak veya sistemi yönetmek için giriş yapın.</p>
+        <a asp-controller="Hesap" asp-action="Giris" class="btn btn-primary me-2">Giriş Yap</a>
+        <a asp-controller="Hesap" asp-action="Kayit" class="btn btn-outline-primary">Kayıt Ol</a>
+    }
 </div>
