@@ -1,0 +1,63 @@
+@using HastaneRandevuSistemi.Models
+@model HastaneRandevuSistemi.Models.Kurumlar.Sube
+@{
+    ViewData["Title"] = Model.Ad;
+}
+
+<a asp-action="Index">&larr; Kurumlara dön</a>
+<h2 class="mt-2 mb-4">@Model.Kurum.Ad - @Model.Ad</h2>
+
+@if (TempData["Hata"] != null)
+{
+    <div class="alert alert-danger">@TempData["Hata"]</div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <h4>Bölümler</h4>
+        <ul class="list-group mb-3">
+            @foreach (var bolum in Model.Bolumler)
+            {
+                <li class="list-group-item">@bolum.Ad</li>
+            }
+        </ul>
+
+        <form asp-action="BolumEkle" method="post" class="d-flex gap-2">
+            <input type="hidden" name="subeId" value="@Model.Id" />
+            <input name="ad" class="form-control" placeholder="Yeni bölüm adı" required />
+            <button type="submit" class="btn btn-outline-primary">Ekle</button>
+        </form>
+    </div>
+
+    <div class="col-md-6">
+        <h4>Çalışma Saatleri</h4>
+        <table class="table">
+            <thead>
+                <tr><th>Gün</th><th>Açılış</th><th>Kapanış</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var saat in Model.CalismaSaatleri.OrderBy(c => Array.IndexOf(Gunler.Liste, c.Gun)))
+                {
+                    <tr>
+                        <td>@Gunler.Ad(saat.Gun)</td>
+                        <td>@saat.Acilis.ToString("HH:mm")</td>
+                        <td>@saat.Kapanis.ToString("HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <form asp-action="CalismaSaatiEkle" method="post" class="d-flex gap-2">
+            <input type="hidden" name="subeId" value="@Model.Id" />
+            <select name="gun" class="form-select">
+                @foreach (var gun in Gunler.Liste)
+                {
+                    <option value="@gun">@Gunler.Ad(gun)</option>
+                }
+            </select>
+            <input type="time" name="acilis" class="form-control" required />
+            <input type="time" name="kapanis" class="form-control" required />
+            <button type="submit" class="btn btn-outline-primary">Ekle</button>
+        </form>
+    </div>
+</div>

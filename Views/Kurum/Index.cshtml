@@ -1,0 +1,34 @@
+﻿@model List<HastaneRandevuSistemi.Models.Kurumlar.Kurum>
+@{
+    ViewData["Title"] = "Kurum Yönetimi";
+}
+
+<h2 class="mb-4">Hastane / Klinikler</h2>
+
+@foreach (var kurum in Model)
+{
+    <div class="card mb-3">
+        <div class="card-header fw-bold">@kurum.Ad</div>
+        <div class="card-body">
+            <h6>Şubeler</h6>
+            <ul>
+                @foreach (var sube in kurum.Subeler)
+                {
+                    <li><a asp-action="Sube" asp-route-id="@sube.Id">@sube.Ad</a></li>
+                }
+            </ul>
+
+            <form asp-action="SubeEkle" method="post" class="d-flex gap-2">
+                <input type="hidden" name="kurumId" value="@kurum.Id" />
+                <input name="ad" class="form-control" placeholder="Yeni şube adı" required />
+                <button type="submit" class="btn btn-outline-primary text-nowrap">Şube Ekle</button>
+            </form>
+        </div>
+    </div>
+}
+
+<h5 class="mt-4">Yeni Hastane / Klinik</h5>
+<form asp-action="KurumEkle" method="post" class="d-flex gap-2">
+    <input name="ad" class="form-control" placeholder="Kurum adı" required />
+    <button type="submit" class="btn btn-primary">Ekle</button>
+</form>
