@@ -1,0 +1,83 @@
+@using HastaneRandevuSistemi.Models.Kurumlar
+@model List<HastaneRandevuSistemi.Models.Hizmetler.Hizmet>
+@{
+    ViewData["Title"] = "Hizmetler";
+    var bolumler = (List<Bolum>)ViewBag.Bolumler;
+}
+
+<h2 class="mb-4">Sağlık Hizmetleri</h2>
+
+@if (TempData["Hata"] != null)
+{
+    <div class="alert alert-danger">@TempData["Hata"]</div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Hizmet</th>
+            <th>Tür</th>
+            <th>Şube / Bölüm</th>
+            <th>Süre</th>
+            <th>Ücret</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var hizmet in Model)
+        {
+            <tr>
+                <td>@hizmet.Ad</td>
+                <td>@hizmet.HizmetTuru</td>
+                <td>@hizmet.Bolum.Sube.Ad / @hizmet.Bolum.Ad</td>
+                <td>@hizmet.SureDakika dk</td>
+                <td>@hizmet.UcretHesapla().ToString("N2") TL</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4 class="mt-5">Yeni Hizmet Ekle</h4>
+<form asp-action="Ekle" method="post" class="row g-3">
+    <div class="col-md-3">
+        <label class="form-label">Tür</label>
+        <select name="tur" class="form-select">
+            <option value="Muayene">Muayene</option>
+            <option value="Laboratuvar">Laboratuvar</option>
+            <option value="Radyoloji">Radyoloji</option>
+        </select>
+    </div>
+    <div class="col-md-5">
+        <label class="form-label">Hizmet Adı</label>
+        <input name="ad" class="form-control" required />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Bölüm</label>
+        <select name="bolumId" class="form-select">
+            @foreach (var bolum in bolumler)
+            {
+                <option value="@bolum.Id">@bolum.Sube.Ad - @bolum.Ad</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Süre (dakika)</label>
+        <input type="number" name="sureDakika" class="form-control" min="1" required />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Ücret (TL)</label>
+        <input type="number" name="ucret" class="form-control" min="0" step="1" required />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Kontrast Ücreti (TL)</label>
+        <input type="number" name="kontrastUcreti" class="form-control" min="0" step="1" value="0" />
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+        <div class="form-check">
+            <input type="checkbox" name="kontrastliMi" value="true" class="form-check-input" id="kontrastliMi" />
+            <label class="form-check-label" for="kontrastliMi">Kontrastlı (sadece radyoloji)</label>
+        </div>
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Hizmet Ekle</button>
+    </div>
+</form>
