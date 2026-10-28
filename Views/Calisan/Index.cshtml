@@ -1,0 +1,103 @@
+@using HastaneRandevuSistemi.Models.Hizmetler
+@using HastaneRandevuSistemi.Models.Kullanicilar
+@using HastaneRandevuSistemi.Models.Kurumlar
+@model List<Calisan>
+@{
+    ViewData["Title"] = "Çalışanlar";
+    var bolumler = (List<Bolum>)ViewBag.Bolumler;
+    var hizmetler = (List<Hizmet>)ViewBag.Hizmetler;
+}
+
+<h2 class="mb-4">Doktorlar ve Sağlık Personeli</h2>
+
+@if (TempData["Hata"] != null)
+{
+    <div class="alert alert-danger">@TempData["Hata"]</div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Ad Soyad</th>
+            <th>Tür</th>
+            <th>Uzmanlık / Görev</th>
+            <th>Şube / Bölüm</th>
+            <th>Verdiği Hizmetler</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var calisan in Model)
+        {
+            <tr>
+                <td>@calisan.GorunenAd</td>
+                @if (calisan is Doktor doktor)
+                {
+                    <td>Doktor</td>
+                    <td>@doktor.UzmanlikAlani</td>
+                }
+                else if (calisan is SaglikPersoneli personel)
+                {
+                    <td>Sağlık Personeli</td>
+                    <td>@personel.Gorev</td>
+                }
+                <td>@calisan.Bolum.Sube.Ad / @calisan.Bolum.Ad</td>
+                <td>@string.Join(", ", calisan.Hizmetler.Select(h => h.Ad))</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4 class="mt-5">Yeni Çalışan Ekle</h4>
+<form asp-action="Ekle" method="post" class="row g-3">
+    <div class="col-md-3">
+        <label class="form-label">Tür</label>
+        <select name="tur" class="form-select">
+            <option value="Doktor">Doktor</option>
+            <option value="SaglikPersoneli">Sağlık Personeli</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Ad</label>
+        <input name="ad" class="form-control" required />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Soyad</label>
+        <input name="soyad" class="form-control" required />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Uzmanlık Alanı / Görev</label>
+        <input name="uzmanlikVeyaGorev" class="form-control" placeholder="ör. Kardiyoloji, Hemşire" required />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">E-posta</label>
+        <input type="email" name="email" class="form-control" required />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Şifre</label>
+        <input type="password" name="sifre" class="form-control" minlength="6" required />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Bölüm</label>
+        <select name="bolumId" class="form-select">
+            @foreach (var bolum in bolumler)
+            {
+                <option value="@bolum.Id">@bolum.Sube.Ad - @bolum.Ad</option>
+            }
+        </select>
+    </div>
+    <div class="col-12">
+        <label class="form-label">Verdiği Hizmetler</label>
+        <div>
+            @foreach (var hizmet in hizmetler)
+            {
+                <div class="form-check form-check-inline">
+                    <input type="checkbox" name="hizmetIdleri" value="@hizmet.Id" class="form-check-input" id="hizmet@(hizmet.Id)" />
+                    <label class="form-check-label" for="hizmet@(hizmet.Id)">@hizmet.Ad (@hizmet.Bolum.Ad)</label>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Çalışan Ekle</button>
+    </div>
+</form>
