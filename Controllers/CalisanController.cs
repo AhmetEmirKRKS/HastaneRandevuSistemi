@@ -1,5 +1,6 @@
 using HastaneRandevuSistemi.Data;
 using HastaneRandevuSistemi.Models.Kullanicilar;
+using HastaneRandevuSistemi.Models.Kurumlar;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -66,6 +67,41 @@ namespace HastaneRandevuSistemi.Controllers
             _db.Calisanlar.Add(calisan);
             _db.SaveChanges();
             return RedirectToAction("Index");
+        }
+
+        // Çalışanın randevu kabul ettiği gün ve saatler
+        public IActionResult Uygunluk(int id)
+        {
+            var calisan = _db.Calisanlar
+                .Include(c => c.UygunlukDilimleri)
+                .FirstOrDefault(c => c.Id == id);
+
+            if (calisan == null)
+                return NotFound();
+
+            return View(calisan);
+        }
+
+        [HttpPost]
+        public IActionResult UygunlukEkle(int calisanId, DayOfWeek gun, TimeOnly baslangic, TimeOnly bitis)
+        {
+            bool cakisiyor = _db.UygunlukDilimleri.Any(d =>
+                d.CalisanId == calisanId && d.Gun == gun && d.Baslangic < bitis && baslangic < d.Bitis);
+
+            if (baslangic >= bitis)
+            {
+                TempData["Hata"] = "Başlangıç saati bitiş saatinden önce olmalıdır.";
+            }
+            else if (cakisiyor)
+            {
+                TempData["Hata"] = "Bu saat aralığı mevcut bir uygunluk dilimiyle çakışıyor.";
+            }
+            else
+            {
+                _db.UygunlukDilimleri.Add(new UygunlukDilimi { CalisanId = calisanId, Gun = gun, Baslangic = baslangic, Bitis = bitis });
+                _db.SaveChanges();
+            }
+            return RedirectToAction("Uygunluk", new { id = calisanId });
         }
     }
 }

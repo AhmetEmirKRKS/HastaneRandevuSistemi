@@ -1,0 +1,46 @@
+@using HastaneRandevuSistemi.Models
+@model HastaneRandevuSistemi.Models.Kullanicilar.Calisan
+@{
+    ViewData["Title"] = "Uygunluk Saatleri";
+}
+
+<a asp-action="Index">&larr; Çalışanlara dön</a>
+<h2 class="mt-2 mb-4">@Model.GorunenAd - Uygunluk Saatleri</h2>
+
+@if (TempData["Hata"] != null)
+{
+    <div class="alert alert-danger">@TempData["Hata"]</div>
+}
+
+<p class="text-muted">Hastalar bu çalışandan sadece aşağıdaki saatler içinde randevu alabilir.</p>
+
+<table class="table">
+    <thead>
+        <tr><th>Gün</th><th>Başlangıç</th><th>Bitiş</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var dilim in Model.UygunlukDilimleri
+            .OrderBy(d => Array.IndexOf(Gunler.Liste, d.Gun)).ThenBy(d => d.Baslangic))
+        {
+            <tr>
+                <td>@Gunler.Ad(dilim.Gun)</td>
+                <td>@dilim.Baslangic.ToString("HH:mm")</td>
+                <td>@dilim.Bitis.ToString("HH:mm")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h5 class="mt-4">Yeni Uygunluk Dilimi</h5>
+<form asp-action="UygunlukEkle" method="post" class="d-flex gap-2">
+    <input type="hidden" name="calisanId" value="@Model.Id" />
+    <select name="gun" class="form-select">
+        @foreach (var gun in Gunler.Liste)
+        {
+            <option value="@gun">@Gunler.Ad(gun)</option>
+        }
+    </select>
+    <input type="time" name="baslangic" class="form-control" required />
+    <input type="time" name="bitis" class="form-control" required />
+    <button type="submit" class="btn btn-primary">Ekle</button>
+</form>

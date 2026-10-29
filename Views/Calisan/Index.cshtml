@@ -23,6 +23,7 @@
             <th>Uzmanlık / Görev</th>
             <th>Şube / Bölüm</th>
             <th>Verdiği Hizmetler</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -42,6 +43,7 @@
                 }
                 <td>@calisan.Bolum.Sube.Ad / @calisan.Bolum.Ad</td>
                 <td>@string.Join(", ", calisan.Hizmetler.Select(h => h.Ad))</td>
+                <td><a asp-action="Uygunluk" asp-route-id="@calisan.Id" class="btn btn-sm btn-outline-primary text-nowrap">Uygunluk Saatleri</a></td>
             </tr>
         }
     </tbody>
