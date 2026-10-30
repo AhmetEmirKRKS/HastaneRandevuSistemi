@@ -23,6 +23,12 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
                         </li>
+                        @if (User.IsInRole("Hasta"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Randevu" asp-action="Al">Randevu Al</a>
+                            </li>
+                        }
                         @if (User.IsInRole("Yonetici"))
                         {
                             <li class="nav-item">

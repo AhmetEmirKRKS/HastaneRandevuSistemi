@@ -1,0 +1,79 @@
+@using HastaneRandevuSistemi.Models
+@using HastaneRandevuSistemi.Models.Hizmetler
+@using HastaneRandevuSistemi.Models.Kullanicilar
+@{
+    ViewData["Title"] = "Randevu Al";
+    var hizmetler = (List<Hizmet>)ViewBag.Hizmetler;
+    var seciliHizmet = ViewBag.SeciliHizmet as Hizmet;
+    var calisanlar = ViewBag.Calisanlar as List<Calisan>;
+}
+
+<h2 class="mb-4">Randevu Al</h2>
+
+@if (TempData["Basari"] != null)
+{
+    <div class="alert alert-success">@TempData["Basari"]</div>
+}
+@if (TempData["Hata"] != null)
+{
+    <div class="alert alert-danger">@TempData["Hata"]</div>
+}
+
+<h5>1. Hizmet Seçin</h5>
+<table class="table">
+    <thead>
+        <tr><th>Hizmet</th><th>Tür</th><th>Şube / Bölüm</th><th>Süre</th><th>Ücret</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var hizmet in hizmetler)
+        {
+            <tr class="@(hizmet.Id == seciliHizmet?.Id ? "table-primary" : "")">
+                <td>@hizmet.Ad</td>
+                <td>@hizmet.HizmetTuru</td>
+                <td>@hizmet.Bolum.Sube.Ad / @hizmet.Bolum.Ad</td>
+                <td>@hizmet.SureDakika dk</td>
+                <td>@hizmet.UcretHesapla().ToString("N2") TL</td>
+                <td><a asp-action="Al" asp-route-hizmetId="@hizmet.Id" class="btn btn-sm btn-outline-primary">Seç</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (seciliHizmet != null)
+{
+    <h5 class="mt-4">2. Çalışan, Tarih ve Saat Seçin (@seciliHizmet.Ad)</h5>
+
+    @if (calisanlar!.Count == 0)
+    {
+        <p class="text-muted">Bu hizmeti veren bir çalışan bulunmuyor.</p>
+    }
+    else
+    {
+        <form asp-action="Al" method="post">
+            <input type="hidden" name="hizmetId" value="@seciliHizmet.Id" />
+
+            @foreach (var calisan in calisanlar)
+            {
+                <div class="form-check mb-2">
+                    <input type="radio" name="calisanId" value="@calisan.Id" class="form-check-input" id="calisan@(calisan.Id)" required />
+                    <label class="form-check-label" for="calisan@(calisan.Id)">
+                        <strong>@calisan.GorunenAd</strong>
+                        <br />
+                        <small class="text-muted">
+                            Uygun saatler:
+                            @string.Join(", ", calisan.UygunlukDilimleri
+                                .OrderBy(d => Array.IndexOf(Gunler.Liste, d.Gun)).ThenBy(d => d.Baslangic)
+                                .Select(d => $"{Gunler.Ad(d.Gun)} {d.Baslangic:HH:mm}-{d.Bitis:HH:mm}"))
+                        </small>
+                    </label>
+                </div>
+            }
+
+            <div class="d-flex gap-2 mt-3">
+                <input type="date" name="tarih" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                <input type="time" name="saat" class="form-control" required />
+                <button type="submit" class="btn btn-primary text-nowrap">Randevu Al</button>
+            </div>
+        </form>
+    }
+}
