@@ -56,6 +56,19 @@ namespace HastaneRandevuSistemi.Controllers
                 if (!calisan.UygunMu(randevu.Baslangic, randevu.Bitis))
                     throw new InvalidOperationException("Seçilen çalışan bu gün ve saatte randevu kabul etmiyor.");
 
+                // Çakışma kontrolü: aynı gündeki randevulardan biri bu saatle çakışıyor mu?
+                var gun = randevu.Baslangic.Date;
+                var oGunkuRandevular = _db.Randevular
+                    .Where(r => (r.CalisanId == calisanId || r.HastaId == hastaId)
+                             && r.Baslangic >= gun && r.Baslangic < gun.AddDays(1))
+                    .ToList();
+
+                if (oGunkuRandevular.Any(r => r.CalisanId == calisanId && r.CakisiyorMu(randevu.Baslangic, randevu.Bitis)))
+                    throw new InvalidOperationException("Seçilen çalışanın bu saatte başka bir randevusu var.");
+
+                if (oGunkuRandevular.Any(r => r.HastaId == hastaId && r.CakisiyorMu(randevu.Baslangic, randevu.Bitis)))
+                    throw new InvalidOperationException("Bu saatte zaten başka bir randevunuz var.");
+
                 _db.Randevular.Add(randevu);
                 _db.SaveChanges();
 
