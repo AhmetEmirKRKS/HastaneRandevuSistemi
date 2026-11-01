@@ -29,6 +29,12 @@
                                 <a class="nav-link text-dark" asp-controller="Randevu" asp-action="Al">Randevu Al</a>
                             </li>
                         }
+                        @if (User.IsInRole("Doktor") || User.IsInRole("SaglikPersoneli"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Panel" asp-action="Index">Randevu Paneli</a>
+                            </li>
+                        }
                         @if (User.IsInRole("Yonetici"))
                         {
                             <li class="nav-item">

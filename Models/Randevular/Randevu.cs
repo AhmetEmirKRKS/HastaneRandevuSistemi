@@ -24,6 +24,14 @@ namespace HastaneRandevuSistemi.Models.Randevular
         public decimal Ucret { get; private set; }
         public RandevuDurumu Durum { get; private set; }
 
+        // Ekranda gösterilecek Türkçe durum
+        public string DurumMetni => Durum switch
+        {
+            RandevuDurumu.Onaylandi => "Onaylandı",
+            RandevuDurumu.Reddedildi => "Reddedildi",
+            _ => "Onay Bekliyor"
+        };
+
         // Entity Framework'ün veritabanından nesne oluşturabilmesi için
         private Randevu()
         {
