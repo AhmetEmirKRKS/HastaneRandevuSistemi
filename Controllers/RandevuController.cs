@@ -18,6 +18,19 @@ namespace HastaneRandevuSistemi.Controllers
             _db = db;
         }
 
+        // Hastanın aldığı randevular ve onay durumları
+        public IActionResult Randevularim()
+        {
+            int hastaId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var randevular = _db.Randevular
+                .Include(r => r.Calisan)
+                .Include(r => r.Hizmet).ThenInclude(h => h.Bolum).ThenInclude(b => b.Sube)
+                .Where(r => r.HastaId == hastaId)
+                .OrderBy(r => r.Baslangic)
+                .ToList();
+            return View(randevular);
+        }
+
         // 1. adım: hizmet seçilir. 2. adım (hizmetId gelince): çalışan, tarih ve saat seçilir.
         public IActionResult Al(int? hizmetId)
         {
