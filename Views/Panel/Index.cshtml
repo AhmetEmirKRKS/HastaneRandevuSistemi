@@ -25,6 +25,7 @@ else
                 <th>İşlem</th>
                 <th>Süre</th>
                 <th>Ücret</th>
+                <th>Hasta Notu</th>
                 <th>Durum</th>
                 <th></th>
             </tr>
@@ -38,15 +39,30 @@ else
                     <td>@randevu.Hizmet.Ad</td>
                     <td>@((randevu.Bitis - randevu.Baslangic).TotalMinutes) dk</td>
                     <td>@randevu.Ucret.ToString("N2") TL</td>
-                    <td>@randevu.DurumMetni</td>
-                    <td class="text-nowrap">
+                    <td>@randevu.HastaNotu</td>
+                    <td>
+                        @randevu.DurumMetni
+                        @if (randevu.RedNedeni != null)
+                        {
+                            <br />
+                            <small class="text-muted">Neden: @randevu.RedNedeni</small>
+                        }
+                    </td>
+                    <td>
                         @if (randevu.Durum == RandevuDurumu.Beklemede)
                         {
-                            <form asp-action="Onayla" asp-route-id="@randevu.Id" method="post" class="d-inline">
+                            <form asp-action="Onayla" asp-route-id="@randevu.Id" method="post" class="mb-1">
                                 <button type="submit" class="btn btn-sm btn-success">Onayla</button>
                             </form>
-                            <form asp-action="Reddet" asp-route-id="@randevu.Id" method="post" class="d-inline">
+                            <form asp-action="Reddet" asp-route-id="@randevu.Id" method="post" class="d-flex gap-1">
+                                <input name="neden" class="form-control form-control-sm" placeholder="Red nedeni" required />
                                 <button type="submit" class="btn btn-sm btn-danger">Reddet</button>
+                            </form>
+                        }
+                        else if (randevu.Durum == RandevuDurumu.Onaylandi && randevu.Baslangic <= DateTime.Now)
+                        {
+                            <form asp-action="Tamamla" asp-route-id="@randevu.Id" method="post">
+                                <button type="submit" class="btn btn-sm btn-primary">Tamamlandı</button>
                             </form>
                         }
                     </td>

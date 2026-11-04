@@ -1,12 +1,13 @@
 using System.Security.Claims;
 using HastaneRandevuSistemi.Data;
+using HastaneRandevuSistemi.Models.Randevular;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HastaneRandevuSistemi.Controllers
 {
-    // Doktor ve sağlık personelinin kendi randevularını görüp onayladığı/reddettiği panel
+    // Doktor ve sağlık personelinin kendi randevularını yönettiği panel
     [Authorize(Roles = "Doktor,SaglikPersoneli")]
     public class PanelController : Controller
     {
@@ -34,39 +35,65 @@ namespace HastaneRandevuSistemi.Controllers
         [HttpPost]
         public IActionResult Onayla(int id)
         {
-            return DurumDegistir(id, onayla: true);
-        }
-
-        [HttpPost]
-        public IActionResult Reddet(int id)
-        {
-            return DurumDegistir(id, onayla: false);
-        }
-
-        private IActionResult DurumDegistir(int id, bool onayla)
-        {
-            // Çalışan sadece kendi randevusunu onaylayabilir/reddedebilir
-            int calisanId = GirisYapanId;
-            var randevu = _db.Randevular.FirstOrDefault(r => r.Id == id && r.CalisanId == calisanId);
+            var randevu = KendiRandevusu(id);
             if (randevu == null)
                 return NotFound();
 
             try
             {
-                // Durum doğrudan değiştirilemez; Randevu sınıfının metodları kuralları kontrol eder
-                if (onayla)
-                    randevu.Onayla();
-                else
-                    randevu.Reddet();
-
+                randevu.Onayla();
                 _db.SaveChanges();
             }
             catch (InvalidOperationException hata)
             {
                 TempData["Hata"] = hata.Message;
             }
-
             return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult Reddet(int id, string neden)
+        {
+            var randevu = KendiRandevusu(id);
+            if (randevu == null)
+                return NotFound();
+
+            try
+            {
+                randevu.Reddet(neden);
+                _db.SaveChanges();
+            }
+            catch (InvalidOperationException hata)
+            {
+                TempData["Hata"] = hata.Message;
+            }
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult Tamamla(int id)
+        {
+            var randevu = KendiRandevusu(id);
+            if (randevu == null)
+                return NotFound();
+
+            try
+            {
+                randevu.Tamamla();
+                _db.SaveChanges();
+            }
+            catch (InvalidOperationException hata)
+            {
+                TempData["Hata"] = hata.Message;
+            }
+            return RedirectToAction("Index");
+        }
+
+        // Çalışan sadece kendi randevusu üzerinde işlem yapabilir
+        private Randevu? KendiRandevusu(int id)
+        {
+            int calisanId = GirisYapanId;
+            return _db.Randevular.FirstOrDefault(r => r.Id == id && r.CalisanId == calisanId);
         }
     }
 }

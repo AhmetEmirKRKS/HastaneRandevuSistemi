@@ -20,6 +20,7 @@
             <th>Şube / Bölüm</th>
             <th>Süre</th>
             <th>Ücret</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -31,6 +32,13 @@
                 <td>@hizmet.Bolum.Sube.Ad / @hizmet.Bolum.Ad</td>
                 <td>@hizmet.SureDakika dk</td>
                 <td>@hizmet.UcretHesapla().ToString("N2") TL</td>
+                <td class="text-nowrap">
+                    <a asp-action="Duzenle" asp-route-id="@hizmet.Id" class="btn btn-sm btn-outline-secondary">Düzenle</a>
+                    <form asp-action="Sil" asp-route-id="@hizmet.Id" method="post" class="d-inline"
+                          onsubmit="return confirm('Hizmet silinsin mi?')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
+                    </form>
+                </td>
             </tr>
         }
     </tbody>

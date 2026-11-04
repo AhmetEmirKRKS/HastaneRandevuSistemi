@@ -5,6 +5,11 @@
 
 <h2 class="mb-4">Randevularım</h2>
 
+@if (TempData["Hata"] != null)
+{
+    <div class="alert alert-danger">@TempData["Hata"]</div>
+}
+
 @if (Model.Count == 0)
 {
     <p class="text-muted">Henüz randevunuz bulunmuyor. <a asp-action="Al">Randevu almak için tıklayın.</a></p>
@@ -20,7 +25,9 @@ else
                 <th>Şube / Bölüm</th>
                 <th>Süre</th>
                 <th>Ücret</th>
+                <th>Notum</th>
                 <th>Durum</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -33,7 +40,24 @@ else
                     <td>@randevu.Hizmet.Bolum.Sube.Ad / @randevu.Hizmet.Bolum.Ad</td>
                     <td>@((randevu.Bitis - randevu.Baslangic).TotalMinutes) dk</td>
                     <td>@randevu.Ucret.ToString("N2") TL</td>
-                    <td>@randevu.DurumMetni</td>
+                    <td>@randevu.HastaNotu</td>
+                    <td>
+                        @randevu.DurumMetni
+                        @if (randevu.RedNedeni != null)
+                        {
+                            <br />
+                            <small class="text-muted">Neden: @randevu.RedNedeni</small>
+                        }
+                    </td>
+                    <td>
+                        @if (randevu.AktifMi && randevu.Baslangic > DateTime.Now)
+                        {
+                            <form asp-action="IptalEt" asp-route-id="@randevu.Id" method="post"
+                                  onsubmit="return confirm('Randevuyu iptal etmek istediğinize emin misiniz?')">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">İptal Et</button>
+                            </form>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>

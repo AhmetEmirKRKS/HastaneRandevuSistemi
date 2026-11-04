@@ -16,7 +16,7 @@
 
 <table class="table">
     <thead>
-        <tr><th>Gün</th><th>Başlangıç</th><th>Bitiş</th></tr>
+        <tr><th>Gün</th><th>Başlangıç</th><th>Bitiş</th><th></th></tr>
     </thead>
     <tbody>
         @foreach (var dilim in Model.UygunlukDilimleri
@@ -26,6 +26,11 @@
                 <td>@Gunler.Ad(dilim.Gun)</td>
                 <td>@dilim.Baslangic.ToString("HH:mm")</td>
                 <td>@dilim.Bitis.ToString("HH:mm")</td>
+                <td>
+                    <form asp-action="UygunlukSil" asp-route-id="@dilim.Id" method="post">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
+                    </form>
+                </td>
             </tr>
         }
     </tbody>

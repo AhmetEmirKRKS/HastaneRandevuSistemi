@@ -4,6 +4,8 @@ namespace HastaneRandevuSistemi.Models.Enums
     {
         Beklemede,
         Onaylandi,
-        Reddedildi
+        Reddedildi,
+        IptalEdildi,
+        Tamamlandi
     }
 }

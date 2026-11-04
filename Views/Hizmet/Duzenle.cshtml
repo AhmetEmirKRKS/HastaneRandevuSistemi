@@ -1,0 +1,58 @@
+@using HastaneRandevuSistemi.Models.Hizmetler
+@using HastaneRandevuSistemi.Models.Kurumlar
+@model Hizmet
+@{
+    ViewData["Title"] = "Hizmet Düzenle";
+    var bolumler = (List<Bolum>)ViewBag.Bolumler;
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="mb-1">Hizmet Düzenle</h2>
+        <p class="text-muted">Tür: @Model.HizmetTuru</p>
+
+        @if (TempData["Hata"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Hata"]</div>
+        }
+
+        <form asp-action="Duzenle" asp-route-id="@Model.Id" method="post">
+            <div class="mb-3">
+                <label class="form-label">Hizmet Adı</label>
+                <input name="ad" value="@Model.Ad" class="form-control" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Bölüm</label>
+                <select name="bolumId" class="form-select">
+                    @foreach (var bolum in bolumler)
+                    {
+                        <option value="@bolum.Id" selected="@(bolum.Id == Model.BolumId)">@bolum.Sube.Ad - @bolum.Ad</option>
+                    }
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Süre (dakika)</label>
+                <input type="number" name="sureDakika" value="@Model.SureDakika" class="form-control" min="1" required />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Ücret (TL)</label>
+                <input type="number" name="ucret" value="@Model.Ucret.ToString("0")" class="form-control" min="0" step="1" required />
+            </div>
+
+            @if (Model is GoruntulemeHizmeti goruntuleme)
+            {
+                <div class="mb-3">
+                    <label class="form-label">Kontrast Ücreti (TL)</label>
+                    <input type="number" name="kontrastUcreti" value="@goruntuleme.KontrastUcreti.ToString("0")" class="form-control" min="0" step="1" />
+                </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" name="kontrastliMi" value="true" class="form-check-input" id="kontrastliMi" checked="@goruntuleme.KontrastliMi" />
+                    <label class="form-check-label" for="kontrastliMi">Kontrastlı</label>
+                </div>
+            }
+
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+            <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+        </form>
+    </div>
+</div>

@@ -54,5 +54,61 @@ namespace HastaneRandevuSistemi.Controllers
             _db.SaveChanges();
             return RedirectToAction("Index");
         }
+
+        public IActionResult Duzenle(int id)
+        {
+            var hizmet = _db.Hizmetler.Find(id);
+            if (hizmet == null)
+                return NotFound();
+
+            ViewBag.Bolumler = _db.Bolumler.Include(b => b.Sube).ToList();
+            return View(hizmet);
+        }
+
+        // Hizmetin türü değiştirilemez; ad, süre, ücret ve bölüm değiştirilebilir.
+        // Ücret değişse bile eski randevuların ücreti değişmez (randevu kendi ücretini saklar).
+        [HttpPost]
+        public IActionResult Duzenle(int id, string ad, int sureDakika, decimal ucret, int bolumId,
+                                     bool kontrastliMi, decimal kontrastUcreti)
+        {
+            var hizmet = _db.Hizmetler.Find(id);
+            if (hizmet == null)
+                return NotFound();
+
+            if (string.IsNullOrWhiteSpace(ad) || sureDakika <= 0 || ucret < 0)
+            {
+                TempData["Hata"] = "Lütfen ad, süre ve ücret bilgilerini doğru giriniz.";
+                return RedirectToAction("Duzenle", new { id });
+            }
+
+            hizmet.Ad = ad;
+            hizmet.SureDakika = sureDakika;
+            hizmet.Ucret = ucret;
+            hizmet.BolumId = bolumId;
+
+            if (hizmet is GoruntulemeHizmeti goruntuleme)
+            {
+                goruntuleme.KontrastliMi = kontrastliMi;
+                goruntuleme.KontrastUcreti = kontrastUcreti;
+            }
+
+            _db.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult Sil(int id)
+        {
+            if (_db.Randevular.Any(r => r.HizmetId == id))
+            {
+                TempData["Hata"] = "Randevusu olan bir hizmet silinemez.";
+            }
+            else
+            {
+                _db.Hizmetler.Remove(_db.Hizmetler.Find(id)!);
+                _db.SaveChanges();
+            }
+            return RedirectToAction("Index");
+        }
     }
 }

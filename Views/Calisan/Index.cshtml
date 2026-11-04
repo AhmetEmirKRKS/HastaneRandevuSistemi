@@ -43,7 +43,14 @@
                 }
                 <td>@calisan.Bolum.Sube.Ad / @calisan.Bolum.Ad</td>
                 <td>@string.Join(", ", calisan.Hizmetler.Select(h => h.Ad))</td>
-                <td><a asp-action="Uygunluk" asp-route-id="@calisan.Id" class="btn btn-sm btn-outline-primary text-nowrap">Uygunluk Saatleri</a></td>
+                <td class="text-nowrap">
+                    <a asp-action="Uygunluk" asp-route-id="@calisan.Id" class="btn btn-sm btn-outline-primary">Uygunluk Saatleri</a>
+                    <a asp-action="Duzenle" asp-route-id="@calisan.Id" class="btn btn-sm btn-outline-secondary">Düzenle</a>
+                    <form asp-action="Sil" asp-route-id="@calisan.Id" method="post" class="d-inline"
+                          onsubmit="return confirm('Çalışan silinsin mi?')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
+                    </form>
+                </td>
             </tr>
         }
     </tbody>

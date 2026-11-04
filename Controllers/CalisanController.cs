@@ -103,5 +103,89 @@ namespace HastaneRandevuSistemi.Controllers
             }
             return RedirectToAction("Uygunluk", new { id = calisanId });
         }
+
+        [HttpPost]
+        public IActionResult UygunlukSil(int id)
+        {
+            var dilim = _db.UygunlukDilimleri.Find(id)!;
+            _db.UygunlukDilimleri.Remove(dilim);
+            _db.SaveChanges();
+            return RedirectToAction("Uygunluk", new { id = dilim.CalisanId });
+        }
+
+        public IActionResult Duzenle(int id)
+        {
+            var calisan = _db.Calisanlar
+                .Include(c => c.Hizmetler)
+                .FirstOrDefault(c => c.Id == id);
+
+            if (calisan == null)
+                return NotFound();
+
+            ViewBag.Bolumler = _db.Bolumler.Include(b => b.Sube).ToList();
+            ViewBag.Hizmetler = _db.Hizmetler.Include(h => h.Bolum).ToList();
+            return View(calisan);
+        }
+
+        // Çalışanın türü (Doktor / Sağlık Personeli) değiştirilemez, diğer bilgileri değiştirilebilir
+        [HttpPost]
+        public IActionResult Duzenle(int id, string ad, string soyad, string email,
+                                     int bolumId, string uzmanlikVeyaGorev, List<int> hizmetIdleri)
+        {
+            var calisan = _db.Calisanlar
+                .Include(c => c.Hizmetler)
+                .FirstOrDefault(c => c.Id == id);
+
+            if (calisan == null)
+                return NotFound();
+
+            if (string.IsNullOrWhiteSpace(ad) || string.IsNullOrWhiteSpace(soyad) || string.IsNullOrWhiteSpace(email))
+            {
+                TempData["Hata"] = "Lütfen tüm alanları doldurunuz.";
+                return RedirectToAction("Duzenle", new { id });
+            }
+
+            if (_db.Kullanicilar.Any(k => k.Email == email && k.Id != id))
+            {
+                TempData["Hata"] = "Bu e-posta başka bir kullanıcıya ait.";
+                return RedirectToAction("Duzenle", new { id });
+            }
+
+            calisan.Ad = ad;
+            calisan.Soyad = soyad;
+            calisan.Email = email;
+            calisan.BolumId = bolumId;
+
+            if (calisan is Doktor doktor)
+                doktor.UzmanlikAlani = uzmanlikVeyaGorev;
+            else if (calisan is SaglikPersoneli personel)
+                personel.Gorev = uzmanlikVeyaGorev;
+
+            // Verdiği hizmetleri yeniden belirle
+            calisan.Hizmetler.Clear();
+            foreach (var hizmet in _db.Hizmetler.Where(h => hizmetIdleri.Contains(h.Id)))
+            {
+                calisan.Hizmetler.Add(hizmet);
+            }
+
+            _db.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult Sil(int id)
+        {
+            if (_db.Randevular.Any(r => r.CalisanId == id))
+            {
+                TempData["Hata"] = "Randevusu olan bir çalışan silinemez.";
+            }
+            else
+            {
+                // Çalışanın uygunluk dilimleri de onunla birlikte silinir
+                _db.Calisanlar.Remove(_db.Calisanlar.Find(id)!);
+                _db.SaveChanges();
+            }
+            return RedirectToAction("Index");
+        }
     }
 }

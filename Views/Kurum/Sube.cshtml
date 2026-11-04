@@ -5,7 +5,16 @@
 }
 
 <a asp-action="Index">&larr; Kurumlara dön</a>
-<h2 class="mt-2 mb-4">@Model.Kurum.Ad - @Model.Ad</h2>
+<div class="d-flex justify-content-between align-items-center mt-2 mb-4">
+    <h2 class="mb-0">@Model.Kurum.Ad - @Model.Ad</h2>
+    <div class="d-flex gap-1">
+        <a asp-action="SubeDuzenle" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-secondary">Şubeyi Düzenle</a>
+        <form asp-action="SubeSil" asp-route-id="@Model.Id" method="post"
+              onsubmit="return confirm('Şube silinsin mi?')">
+            <button type="submit" class="btn btn-sm btn-outline-danger">Şubeyi Sil</button>
+        </form>
+    </div>
+</div>
 
 @if (TempData["Hata"] != null)
 {
@@ -18,7 +27,16 @@
         <ul class="list-group mb-3">
             @foreach (var bolum in Model.Bolumler)
             {
-                <li class="list-group-item">@bolum.Ad</li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    @bolum.Ad
+                    <div class="d-flex gap-1">
+                        <a asp-action="BolumDuzenle" asp-route-id="@bolum.Id" class="btn btn-sm btn-outline-secondary">Düzenle</a>
+                        <form asp-action="BolumSil" asp-route-id="@bolum.Id" method="post"
+                              onsubmit="return confirm('Bölüm silinsin mi?')">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
+                        </form>
+                    </div>
+                </li>
             }
         </ul>
 
@@ -33,7 +51,7 @@
         <h4>Çalışma Saatleri</h4>
         <table class="table">
             <thead>
-                <tr><th>Gün</th><th>Açılış</th><th>Kapanış</th></tr>
+                <tr><th>Gün</th><th>Açılış</th><th>Kapanış</th><th></th></tr>
             </thead>
             <tbody>
                 @foreach (var saat in Model.CalismaSaatleri.OrderBy(c => Array.IndexOf(Gunler.Liste, c.Gun)))
@@ -42,6 +60,11 @@
                         <td>@Gunler.Ad(saat.Gun)</td>
                         <td>@saat.Acilis.ToString("HH:mm")</td>
                         <td>@saat.Kapanis.ToString("HH:mm")</td>
+                        <td>
+                            <form asp-action="CalismaSaatiSil" asp-route-id="@saat.Id" method="post">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
+                            </form>
+                        </td>
                     </tr>
                 }
             </tbody>

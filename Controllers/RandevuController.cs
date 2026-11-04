@@ -51,7 +51,7 @@ namespace HastaneRandevuSistemi.Controllers
         }
 
         [HttpPost]
-        public IActionResult Al(int hizmetId, int calisanId, DateOnly tarih, TimeOnly saat)
+        public IActionResult Al(int hizmetId, int calisanId, DateOnly tarih, TimeOnly saat, string? hastaNotu)
         {
             int hastaId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var hasta = _db.Hastalar.Find(hastaId)!;
@@ -64,7 +64,7 @@ namespace HastaneRandevuSistemi.Controllers
             try
             {
                 // Kurallar (çalışan bu hizmeti veriyor mu, geçmiş tarih mi) Randevu sınıfının içinde kontrol edilir
-                var randevu = new Randevu(hasta, calisan, hizmet, tarih.ToDateTime(saat));
+                var randevu = new Randevu(hasta, calisan, hizmet, tarih.ToDateTime(saat), hastaNotu);
 
                 if (!calisan.UygunMu(randevu.Baslangic, randevu.Bitis))
                     throw new InvalidOperationException("Seçilen çalışan bu gün ve saatte randevu kabul etmiyor.");
@@ -93,6 +93,28 @@ namespace HastaneRandevuSistemi.Controllers
             }
 
             return RedirectToAction("Al", new { hizmetId });
+        }
+
+        [HttpPost]
+        public IActionResult IptalEt(int id)
+        {
+            // Hasta sadece kendi randevusunu iptal edebilir
+            int hastaId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var randevu = _db.Randevular.FirstOrDefault(r => r.Id == id && r.HastaId == hastaId);
+            if (randevu == null)
+                return NotFound();
+
+            try
+            {
+                randevu.IptalEt();
+                _db.SaveChanges();
+            }
+            catch (InvalidOperationException hata)
+            {
+                TempData["Hata"] = hata.Message;
+            }
+
+            return RedirectToAction("Randevularim");
         }
     }
 }

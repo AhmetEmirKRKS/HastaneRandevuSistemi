@@ -5,7 +5,7 @@ using HastaneRandevuSistemi.Models.Kullanicilar;
 namespace HastaneRandevuSistemi.Models.Randevular
 {
     // Alanlar "private set": randevu dışarıdan doğrudan değiştirilemez,
-    // durum sadece Onayla() ve Reddet() metodlarıyla değişir (kapsülleme).
+    // durum sadece Onayla(), Reddet(), IptalEt() ve Tamamla() metodlarıyla değişir (kapsülleme).
     public class Randevu
     {
         public int Id { get; private set; }
@@ -24,20 +24,28 @@ namespace HastaneRandevuSistemi.Models.Randevular
         public decimal Ucret { get; private set; }
         public RandevuDurumu Durum { get; private set; }
 
+        public string? HastaNotu { get; private set; }
+        public string? RedNedeni { get; private set; }
+
         // Ekranda gösterilecek Türkçe durum
         public string DurumMetni => Durum switch
         {
             RandevuDurumu.Onaylandi => "Onaylandı",
             RandevuDurumu.Reddedildi => "Reddedildi",
+            RandevuDurumu.IptalEdildi => "İptal Edildi",
+            RandevuDurumu.Tamamlandi => "Tamamlandı",
             _ => "Onay Bekliyor"
         };
+
+        // Sadece bekleyen veya onaylanmış randevular takvimde yer kaplar
+        public bool AktifMi => Durum == RandevuDurumu.Beklemede || Durum == RandevuDurumu.Onaylandi;
 
         // Entity Framework'ün veritabanından nesne oluşturabilmesi için
         private Randevu()
         {
         }
 
-        public Randevu(Hasta hasta, Calisan calisan, Hizmet hizmet, DateTime baslangic)
+        public Randevu(Hasta hasta, Calisan calisan, Hizmet hizmet, DateTime baslangic, string? hastaNotu)
         {
             if (!calisan.HizmetVerebilirMi(hizmet))
                 throw new InvalidOperationException("Seçilen çalışan bu hizmeti vermiyor.");
@@ -56,11 +64,11 @@ namespace HastaneRandevuSistemi.Models.Randevular
             Bitis = baslangic.AddMinutes(hizmet.SureDakika);
             Ucret = hizmet.UcretHesapla();   // hizmetin türüne göre doğru metod çalışır
             Durum = RandevuDurumu.Beklemede;
+            HastaNotu = hastaNotu;
         }
 
-        // Reddedilen randevular takvimde yer kaplamaz
         public bool CakisiyorMu(DateTime baslangic, DateTime bitis) =>
-            Durum != RandevuDurumu.Reddedildi && Baslangic < bitis && baslangic < Bitis;
+            AktifMi && Baslangic < bitis && baslangic < Bitis;
 
         public void Onayla()
         {
@@ -70,12 +78,38 @@ namespace HastaneRandevuSistemi.Models.Randevular
             Durum = RandevuDurumu.Onaylandi;
         }
 
-        public void Reddet()
+        public void Reddet(string neden)
         {
             if (Durum != RandevuDurumu.Beklemede)
                 throw new InvalidOperationException("Sadece bekleyen randevular reddedilebilir.");
 
+            if (string.IsNullOrWhiteSpace(neden))
+                throw new InvalidOperationException("Red nedeni yazılmalıdır.");
+
             Durum = RandevuDurumu.Reddedildi;
+            RedNedeni = neden;
+        }
+
+        public void IptalEt()
+        {
+            if (!AktifMi)
+                throw new InvalidOperationException("Bu randevu iptal edilemez.");
+
+            if (Baslangic <= DateTime.Now)
+                throw new InvalidOperationException("Saati gelmiş veya geçmiş bir randevu iptal edilemez.");
+
+            Durum = RandevuDurumu.IptalEdildi;
+        }
+
+        public void Tamamla()
+        {
+            if (Durum != RandevuDurumu.Onaylandi)
+                throw new InvalidOperationException("Sadece onaylanmış randevular tamamlanabilir.");
+
+            if (Baslangic > DateTime.Now)
+                throw new InvalidOperationException("Saati gelmemiş bir randevu tamamlanamaz.");
+
+            Durum = RandevuDurumu.Tamamlandi;
         }
     }
 }
