@@ -14,6 +14,13 @@
 
 <p class="text-muted">Hastalar bu çalışandan sadece aşağıdaki saatler içinde randevu alabilir.</p>
 
+<p class="text-muted">
+    @Model.Bolum.Sube.Ad çalışma saatleri:
+    @string.Join(", ", Model.Bolum.Sube.CalismaSaatleri
+        .OrderBy(c => Array.IndexOf(Gunler.Liste, c.Gun))
+        .Select(c => $"{Gunler.Ad(c.Gun)} {c.Acilis:HH:mm}-{c.Kapanis:HH:mm}"))
+</p>
+
 <table class="table">
     <thead>
         <tr><th>Gün</th><th>Başlangıç</th><th>Bitiş</th><th></th></tr>

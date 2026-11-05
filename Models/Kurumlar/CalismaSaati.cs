@@ -9,5 +9,9 @@ namespace HastaneRandevuSistemi.Models.Kurumlar
 
         public int SubeId { get; set; }
         public Sube Sube { get; set; } = null!;
+
+        // Verilen saat aralığı şubenin açık olduğu saatlerin içinde mi?
+        public bool Kapsar(TimeOnly baslangic, TimeOnly bitis) =>
+            baslangic >= Acilis && bitis <= Kapanis;
     }
 }

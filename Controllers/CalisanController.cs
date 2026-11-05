@@ -74,6 +74,7 @@ namespace HastaneRandevuSistemi.Controllers
         {
             var calisan = _db.Calisanlar
                 .Include(c => c.UygunlukDilimleri)
+                .Include(c => c.Bolum).ThenInclude(b => b.Sube).ThenInclude(s => s.CalismaSaatleri)
                 .FirstOrDefault(c => c.Id == id);
 
             if (calisan == null)
@@ -88,9 +89,19 @@ namespace HastaneRandevuSistemi.Controllers
             bool cakisiyor = _db.UygunlukDilimleri.Any(d =>
                 d.CalisanId == calisanId && d.Gun == gun && d.Baslangic < bitis && baslangic < d.Bitis);
 
+            // Çalışanın şubesinin o günkü çalışma saati
+            var subeSaati = _db.Calisanlar
+                .Where(c => c.Id == calisanId)
+                .SelectMany(c => c.Bolum.Sube.CalismaSaatleri)
+                .FirstOrDefault(s => s.Gun == gun);
+
             if (baslangic >= bitis)
             {
                 TempData["Hata"] = "Başlangıç saati bitiş saatinden önce olmalıdır.";
+            }
+            else if (subeSaati == null || !subeSaati.Kapsar(baslangic, bitis))
+            {
+                TempData["Hata"] = "Uygunluk saati, şubenin o günkü çalışma saatleri içinde olmalıdır.";
             }
             else if (cakisiyor)
             {
